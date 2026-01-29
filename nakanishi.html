@@ -94,6 +94,45 @@
     .back-to-index a:hover {
       background-color: #5f9ea0;
     }
+
+    #pdf-container {
+      text-align: center;
+      margin: 40px 0;
+    }
+
+    #pdf-viewer {
+      width: 90%;
+      max-width: 850px;
+      border-radius: 12px;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .pdf-controls {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+    }
+
+    .pdf-btn {
+      padding: 10px 22px;
+      background: #4682b4;
+      border: none;
+      color: white;
+      font-size: 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .pdf-btn:hover {
+      background: #5f9ea0;
+    }
+
+    .page-info {
+      font-size: 16px;
+      color: #444;
+    }
   </style>
 </head>
 <body>
@@ -190,8 +229,18 @@
       </ul>
     </div>
 
-    <div class="photo">
-      <img src="img/中間発表_yugen.png" alt="中間発表の写真">
+     <div class="section">
+      <h3>発表資料（スライド表示）</h3>
+      <div id="pdf-container">
+        <canvas id="pdf-viewer"></canvas>
+        <div class="pdf-controls">
+          <button class="pdf-btn" id="prev">◀ Prev</button>
+          <span class="page-info">
+            <span id="page-num"></span> / <span id="page-count"></span>
+          </span>
+          <button class="pdf-btn" id="next">Next ▶</button>
+        </div>
+      </div>
     </div>
 
     <div class="download-link">
@@ -201,5 +250,50 @@
  <div class="back-to-index">
   <a href="index.html#tab-2025">研究室に戻る</a>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+
+<script>
+  const url = "img/ICT中間発表_yugen.pdf";
+
+  let pdfDoc = null,
+    pageNum = 1,
+    canvas = document.getElementById("pdf-viewer"),
+    ctx = canvas.getContext("2d");
+
+  pdfjsLib.getDocument(url).promise.then((pdf) => {
+    pdfDoc = pdf;
+    document.getElementById("page-count").textContent = pdf.numPages;
+    renderPage(pageNum);
+  });
+
+  function renderPage(num) {
+    pdfDoc.getPage(num).then((page) => {
+      const viewport = page.getViewport({ scale: 1.5 });
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+
+      const renderContext = {
+        canvasContext: ctx,
+        viewport: viewport,
+      };
+      page.render(renderContext);
+
+      document.getElementById("page-num").textContent = num;
+    });
+  }
+
+  document.getElementById("prev").addEventListener("click", () => {
+    if (pageNum <= 1) return;
+    pageNum--;
+    renderPage(pageNum);
+  });
+
+  document.getElementById("next").addEventListener("click", () => {
+    if (pageNum >= pdfDoc.numPages) return;
+    pageNum++;
+    renderPage(pageNum);
+  });
+</script>
 </body>
 </html>
